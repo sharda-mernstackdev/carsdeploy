@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Search, Star, Car, Fuel, Users, X, MapPin, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -60,28 +62,7 @@ const carData = {
   ]
 }
 
-const brandModels = {
-  'Maruti Suzuki': ['Swift', 'Baleno', 'Dzire', 'Alto', 'Wagon R'],
-  'Hyundai': ['i20', 'Creta', 'Venue', 'Verna', 'Grand i10'],
-  'Tata': ['Nexon', 'Altroz', 'Harrier', 'Tiago', 'Punch'],
-  'Mahindra': ['XUV700', 'Thar', 'Scorpio', 'XUV300', 'Bolero'],
-}
-
-const modelVariants = {
-  'Swift': ['LXi', 'VXi', 'ZXi', 'ZXi+'],
-  'Baleno': ['Sigma', 'Delta', 'Zeta', 'Alpha'],
-}
-
-const nagpurRTOCodes = ['MH-31', 'MH-40', 'MH-49']
-
-const nagpurLocations = [
-  "Dharampeth", "Sadar", "Sitabuldi", "Itwari", "Mahal", "Gandhibagh", "Nandanvan",
-  "Lakadganj", "Ashi Nagar", "Mangalwari", "Nehru Nagar", "Hanuman Nagar", "Dhantoli",
-  "Civil Lines", "Ramdaspeth", "Shankar Nagar", "Bajaj Nagar", "Pratap Nagar", "Jaripatka",
-  "Nara", "Gorewada", "Mankapur", "Koradi", "Hingna", "Wadi", "Khamla", "Sonegaon", "Besa"
-]
-
-export function NewCars() {
+export  function NewCars() {
   const [visibleBrands, setVisibleBrands] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('Luxury')
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -106,15 +87,6 @@ export function NewCars() {
     whatsappUpdates: false,
     carImages: [null, null, null, null],
   })
-
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filteredBrands, setFilteredBrands] = useState(logos)
-  const [selectedBrand, setSelectedBrand] = useState('')
-  const [filteredModels, setFilteredModels] = useState([])
-  const [selectedModel, setSelectedModel] = useState('')
-  const [filteredVariants, setFilteredVariants] = useState([])
-  const [showThankYou, setShowThankYou] = useState(false)
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -154,36 +126,12 @@ export function NewCars() {
       ...prevData,
       [name]: type === 'checkbox' ? checked : value
     }))
-
-    if (name === 'brand') {
-      setSelectedBrand(value)
-      setFilteredModels(brandModels[value] || [])
-      setFilteredVariants([])  // Clear variants when brand changes
-    } else if (name === 'model') {
-      setSelectedModel(value)
-      setFilteredVariants(modelVariants[value] || [])
-      // Automatically move to the next step if variants are available
-      if (modelVariants[value] && modelVariants[value].length > 0) {
-        nextStep()
-      }
-    }
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log(formData)
-    setShowThankYou(true)
-    setTimeout(() => {
-      setIsModalOpen(false)
-      setShowThankYou(false)
-    }, 3000)
-  }
-
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase()
-    setSearchTerm(term)
-    const filtered = logos.filter(logo => logo.name.toLowerCase().includes(term))
-    setFilteredBrands(filtered)
+    setIsModalOpen(false)
   }
 
   const nextStep = () => setStep(step + 1)
@@ -194,9 +142,49 @@ export function NewCars() {
     nextStep()
   }
 
+  const popularBrands = [
+    { name: 'Maruti Suzuki', logo: '/maruti.png' },
+    { name: 'Hyundai', logo: '/hyundai.png' },
+    { name: 'Mahindra', logo: '/mahindra.png' },
+    { name: 'Tata', logo: '/tata.png' },
+    { name: 'Honda', logo: '/honda.png' },
+    { name: 'Toyota', logo: '/toyota.png' },
+    { name: 'Ford', logo: '/ford.png' },
+    { name: 'Renault', logo: '/renault.png' }
+  ]
+
+  const years = ['2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016']
+  const models = ['Swift', 'Baleno', 'Ertiga', 'Swift Dzire', 'Wagon R 1.0']
+  const variants = ['VXI O [2014 - 2018]', 'DLX [2016-2017]', 'LXI (O) [2014 - 2018]', 'LXI [2014 - 2018]']
+  const rtoCodes = ['MH-49', 'MH-12', 'MH-02', 'MH-04', 'MH-14', 'MH-01', 'MH-43', 'MH-03']
+  const kmsRanges = [
+    '0 - 10,000 Km',
+    '10,000 - 20,000 Km',
+    '20,000 - 30,000 Km',
+    '30,000 - 40,000 Km',
+    '40,000 - 50,000 Km',
+    '50,000 - 60,000 Km'
+  ]
+
   const getCurrentLocation = () => {
-    setShowLocationDropdown(true)
-  }
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setFormData(prev => ({ 
+            ...prev, 
+            carLocation: `Lat: ${latitude.toFixed(2)}, Long: ${longitude.toFixed(2)}` 
+          }));
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          alert("Unable to retrieve your location");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser");
+    }
+  };
 
   return (
     <>
@@ -208,7 +196,7 @@ export function NewCars() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           >
-            <motion.div
+            <motion
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
@@ -228,6 +216,20 @@ export function NewCars() {
                   </button>
                 </div>
 
+                {/* Progress Steps */}
+                <div className="flex px-4 py-2 bg-gray-100 overflow-x-auto">
+                  {['Brand', 'Year', 'Model', 'Variant', 'Reg. state', 'Kms Driven', 'Car Images', 'Car location', 'Selling Price', 'Customer Info', 'Phone Number', 'Selling Timeline'].map((label, i) => (
+                    <div
+                      key={label}
+                      className={`flex-shrink-0 text-center text-xs px-2 ${
+                        i + 1 === step ? 'text-orange-600 font-semibold' : 'text-gray-500'
+                      }`}
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+
                 {/* Form Steps */}
                 <div className="flex-1 overflow-y-auto p-6">
                   {step === 1 && (
@@ -236,33 +238,31 @@ export function NewCars() {
                         <input
                           type="text"
                           name="carNumber"
-                          placeholder="MH31 AB1234"
+                          placeholder="DL 01 AB12XX"
                           value={formData.carNumber}
                           onChange={handleChange}
                           className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-2xl text-center uppercase"
-                          pattern="^[A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{4}$"
-                          title="Please enter a valid car number (e.g., MH31AB1234)"
-                          required
                         />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs">
+                            IND
+                          </div>
+                        </div>
                       </div>
+                      <button
+                        onClick={nextStep}
+                        className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                      >
+                        GET CAR PRICE
+                      </button>
+                      <div className="text-center text-gray-500">Or</div>
                       <div>
-                        <h3 className="text-lg font-medium mb-4 text-center">Select your car brand</h3>
-                        <input
-                          type="text"
-                          placeholder="Search brands"
-                          value={searchTerm}
-                          onChange={handleSearch}
-                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all mb-4"
-                        />
+                        <h3 className="text-lg font-medium mb-4 text-center">Start with your car brand</h3>
                         <div className="grid grid-cols-4 gap-4">
-                          {filteredBrands.map((brand) => (
+                          {popularBrands.map((brand) => (
                             <button
                               key={brand.name}
-                              onClick={() => {
-                                setSelectedBrand(brand.name)
-                                setFilteredModels(brandModels[brand.name] || [])
-                                nextStep()
-                              }}
+                              onClick={() => updateFormData('brand', brand.name)}
                               className="p-4 border rounded-lg flex flex-col items-center gap-2 hover:bg-gray-50"
                             >
                               <img src={brand.logo} alt={brand.name} className="w-10 h-10 object-contain" />
@@ -276,153 +276,110 @@ export function NewCars() {
 
                   {step === 2 && (
                     <div>
-                      <h3 className="font-medium mb-4">Select manufacturing year</h3>
-                      <select
-                        name="year"
-                        value={formData.year}
-                        onChange={handleChange}
+                      <input
+                        type="text"
+                        placeholder="Search manufacturing year"
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all mb-4"
-                      >
-                        <option value="">Select Year</option>
-                        {Array.from({ length: 25 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                          <option key={year} value={year}>
+                      />
+                      <div className="space-y-2">
+                        {years.map((year) => (
+                          <button
+                            key={year}
+                            onClick={() => updateFormData('year', year)}
+                            className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                          >
                             {year}
-                          </option>
+                          </button>
                         ))}
-                      </select>
-                      <button
-                        onClick={nextStep}
-                        disabled={!formData.year}
-                        className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
+                      </div>
                     </div>
                   )}
 
                   {step === 3 && (
                     <div>
-                      <h3 className="font-medium mb-4">Select Car Model</h3>
-                      <select
-                        name="model"
-                        value={formData.model}
-                        onChange={handleChange}
+                      <input
+                        type="text"
+                        placeholder="Search Car Models"
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all mb-4"
-                      >
-                        <option value="">Select Model</option>
-                        {filteredModels.map((model) => (
-                          <option key={model} value={model}>
+                      />
+                      <h3 className="font-medium mb-2">Popular Models</h3>
+                      <div className="space-y-2">
+                        {models.map((model) => (
+                          <button
+                            key={model}
+                            onClick={() => updateFormData('model', model)}
+                            className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                          >
                             {model}
-                          </option>
+                          </button>
                         ))}
-                      </select>
-                      <button
-                        onClick={() => {
-                          if (filteredVariants.length === 1) {
-                            setFormData(prev => ({ ...prev, variant: filteredVariants[0] }))
-                            nextStep()
-                          } else {
-                            nextStep()
-                          }
-                        }}
-                        disabled={!formData.model}
-                        className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
+                      </div>
                     </div>
                   )}
 
                   {step === 4 && (
                     <div>
-                      <h3 className="font-medium mb-4">Select variant</h3>
-                      {filteredVariants.length > 1 ? (
-                        <>
-                          <select
-                            name="variant"
-                            value={formData.variant}
-                            onChange={handleChange}
-                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all mb-4"
-                          >
-                            <option value="">Select Variant</option>
-                            {filteredVariants.map((variant) => (
-                              <option key={variant} value={variant}>
-                                {variant}
-                              </option>
-                            ))}
-                          </select>
+                      <h3 className="font-medium mb-2">Select variant</h3>
+                      <div className="space-y-2">
+                        {variants.map((variant) => (
                           <button
-                            onClick={nextStep}
-                            disabled={!formData.variant}
-                            className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
-                          >
-                            Next
-                          </button>
-                        </>
-                      ) : (
-                        <div className="text-center">
-                          <p className="mb-4">Variant automatically selected: {formData.variant}</p>
-                          <button
-                            onClick={nextStep}
+                            key={variant}
+                            onClick={() => updateFormData('variant', variant)}
                             className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                           >
-                            Next
+                            {variant}
                           </button>
-                        </div>
-                      )}
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   {step === 5 && (
                     <div>
-                      <h3 className="font-medium mb-4">Select RTO Code</h3>
-                      <select
+                      <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h3 className="font-medium">Maharashtra</h3>
+                      </div>
+                      <input
+                        type="text"
                         name="regState"
+                        placeholder="MH-"
                         value={formData.regState}
                         onChange={handleChange}
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all mb-4"
-                      >
-                        <option value="">Select RTO Code</option>
-                        {nagpurRTOCodes.map((code) => (
-                          <option key={code} value={code}>
+                      />
+                      <h3 className="font-medium mb-2">Popular RTO Codes</h3>
+                      <div className="grid grid-cols-4 gap-2">
+                        {rtoCodes.map((code) => (
+                          <button
+                            key={code}
+                            onClick={() => updateFormData('regState', code)}
+                            className="p-2 text-center border rounded-lg hover:bg-gray-50"
+                          >
                             {code}
-                          </option>
+                          </button>
                         ))}
-                      </select>
-                      <button
-                        onClick={nextStep}
-                        disabled={!formData.regState}
-                        className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
+                      </div>
                     </div>
                   )}
 
                   {step === 6 && (
                     <div>
                       <h3 className="font-medium mb-4">Kilometers driven</h3>
-                      <input
-                        type="range"
-                        name="kms"
-                        min="0"
-                        max="200000"
-                        step="1000"
-                        value={formData.kms}
-                        onChange={handleChange}
-                        className="w-full"
-                      />
-                      <p className="text-center mt-2">{formData.kms} km</p>
-                      <button
-                        onClick={nextStep}
-                        className="w-full mt-4 py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                      >
-                        Next
-                      </button>
+                      <div className="space-y-2">
+                        {kmsRanges.map((range) => (
+                          <button
+                            key={range}
+                            onClick={() => updateFormData('kms', range)}
+                            className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                          >
+                            {range}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
-{step === 7 && (
+                  {step === 7 && (
                     <div className="space-y-6">
                       <h3 className="font-medium mb-4">Upload Car Images</h3>
                       <div className="grid grid-cols-2 gap-4">
@@ -496,24 +453,8 @@ export function NewCars() {
                           <MapPin className="w-6 h-6" />
                         </button>
                       </div>
-                      {showLocationDropdown && (
-                        <div className="mt-2 p-2 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {nagpurLocations.map((location, index) => (
-                            <div
-                              key={index}
-                              className="p-2 hover:bg-gray-100 cursor-pointer"
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, carLocation: location }))
-                                setShowLocationDropdown(false)
-                              }}
-                            >
-                              {location}
-                            </div>
-                          ))}
-                        </div>
-                      )}
                       <p className="text-sm text-gray-600 mb-4">
-                        Click the location icon to select from Nagpur locations
+                        Click the location icon to use your current location
                       </p>
                       <button
                         onClick={nextStep}
@@ -612,19 +553,20 @@ export function NewCars() {
                     <div className="space-y-6">
                       <div className="flex items-center gap-4 border-b pb-4">
                         <img
-                          src={logos.find(logo => logo.name === selectedBrand)?.logo || "/placeholder.svg"}
-                          alt={selectedBrand}
+                          src="/placeholder.svg?height=48&width=48"
+                          alt="Maruti Suzuki"
                           className="w-12 h-12 rounded-full"
                         />
                         <div>
-                          <h3 className="font-semibold">{`${selectedBrand}, ${formData.model}`}</h3>
-                          <p className="text-sm text-gray-600">{`${formData.year} | ${formData.regState}`}</p>
+                          <h3 className="font-semibold">Maruti Suzuki, LXI O</h3>
+                          <p className="text-sm text-gray-600">2024 | Petrol | MH-32</p>
                         </div>
-                        <button className="ml-auto text-blue-600 text-sm" onClick={() => setStep(1)}>EDIT</button>
+                        <button className="ml-auto text-blue-600 text-sm">EDIT</button>
                       </div>
 
                       <div>
-                        <h3 className="text-lg font-medium mb-2">Enter your phone number</h3>
+                        <h3 className="text-lg font-medium mb-2Enter your phone number"></h3>
+                        // <p className="text-sm text-gray-600 mb-4">We will save the offer for you</p>
                         <input
                           type="tel"
                           name="phone"
@@ -663,43 +605,27 @@ export function NewCars() {
                     <div className="space-y-6">
                       <h3 className="text-xl font-semibold mb-4">When are you planning to sell your car?</h3>
 
+                      <div className="mb-6">
+                        {/* Removed phone number input as per update 2 */}
+                      </div>
+
                       {['Within this week', 'By next week', 'After 2 weeks', 'Just checking price'].map((option) => (
                         <button
                           key={option}
                           onClick={() => {
-                            setFormData(prevData => ({ ...prevData, sellingTimeline: option }));
+                            updateFormData('sellingTimeline', option);
+                            handleSubmit({ preventDefault: () => {} });
                           }}
-                          className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 mb-2"
+                          className="w-full py-3 px-4 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                         >
                           {option}
                         </button>
                       ))}
-                      <button
-                        onClick={handleSubmit}
-                        className="w-full py-4 px-4 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                      >
-                        Submit
-                      </button>
                     </div>
-                  )}
-
-                  {showThankYou && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="fixed inset-0 flex items-center justify-center z-50"
-                    >
-                      <div className="bg-white p-8 rounded-lg shadow-xl text-center">
-                        <h3 className="text-2xl font-bold text-green-600 mb-4">Thank You!</h3>
-                        <p className="text-gray-600">Your details have been successfully submitted.</p>
-                        <p className="text-gray-600 mt-2">We'll get back to you soon.</p>
-                      </div>
-                    </motion.div>
                   )}
                 </div>
               </div>
-            </motion.div>
+            </motion>
           </motion.div>
         )}
       </AnimatePresence>
